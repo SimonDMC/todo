@@ -1,4 +1,4 @@
-import ContentEditable from 'react-contenteditable'
+import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { placeCaretAtEnd, getInnerHeight } from '../util';
 import { TodoItemType } from '../App';
 
@@ -56,21 +56,19 @@ const TodoItem = (props: TodoItemProps) => {
         transition: 'color 0.3s',
     }
 
-    const handleChange = async (evt: Event) => {
+    const handleChange = async (evt: ContentEditableEvent) => {
         let oldValue = props.todo.text;
         let newValue = (evt.target as HTMLTextAreaElement).value;
         let toSave;
         // if deleting a todo, remove it
         if (oldValue !== '' && newValue === '') {
+            let baseElement = (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement);
             // let fade out
-            (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement).style.opacity = '0';
+            baseElement.style.opacity = '0';
 
-            // if not first element, select previous element
-            let el = document.querySelector(".todo-item.item-" + (props.todo.id - 1) + " .todo-text");
-            // if first element, select next element
-            if (!el) {
-                el = document.querySelector(".todo-item.item-" + (props.todo.id + 1) + " .todo-text");
-            }
+            // if previous element exists, select it, otherwise select next element
+            let el = baseElement.previousElementSibling?.firstChild;
+            if (!el) el = baseElement.nextElementSibling?.firstChild;
             placeCaretAtEnd(el as HTMLInputElement);
 
             await new Promise(r => setTimeout(r, 300))
@@ -84,7 +82,9 @@ const TodoItem = (props: TodoItemProps) => {
                     id: props.nextID,
                     text: '',
                     extraLines: 0,
+                    animation: true,
                 });
+                
                 // update nextID
                 props.setNextID(props.nextID + 1)
             }
@@ -111,27 +111,26 @@ const TodoItem = (props: TodoItemProps) => {
         props.setTodos(toSave);
     };
 
-    const handleKeyDown = (evt: KeyboardEvent) => {
+    const handleKeyDown = (evt: React.KeyboardEvent) => {
+        let baseElement = (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement);
+        
         if (evt.key === 'Enter' || evt.key === 'ArrowDown') {
             // cancel event
             evt.preventDefault();
             evt.stopPropagation();
-
-            // if not last element, select next element
-            let el = document.querySelector(".todo-item.item-" + (props.todo.id + 1) + " .todo-text");
-            if (el) {
-                placeCaretAtEnd(el as HTMLInputElement);
-            }
+            
+            // if next element exists, select it
+            let el = baseElement.nextElementSibling?.firstChild;
+            if (el) placeCaretAtEnd(el as HTMLInputElement);
+            
         }
         if (evt.key === 'ArrowUp') {
             evt.preventDefault();
             evt.stopPropagation();
 
-            // if not first element, select previous element
-            let el = document.querySelector(".todo-item.item-" + (props.todo.id - 1) + " .todo-text");
-            if (el) {
-                placeCaretAtEnd(el as HTMLInputElement);
-            }
+            // if previous element exists, select it
+            let el = baseElement.previousElementSibling?.firstChild;
+            if (el) placeCaretAtEnd(el as HTMLInputElement);
         }
     }
 
@@ -158,8 +157,8 @@ const TodoItem = (props: TodoItemProps) => {
         }));
     }
 
-    const handleTextBoxClick = (evt: Event) => {
-        if ((evt.target as HTMLTextAreaElement).tagName === 'LI') {
+    const handleTextBoxClick = (evt: React.MouseEvent) => {
+        if ((evt.target as HTMLElement).tagName === 'LI') {
             placeCaretAtEnd(document.querySelector(".todo-item.item-" + props.todo.id + " .todo-text") as HTMLInputElement);
         }
     }
@@ -170,17 +169,17 @@ const TodoItem = (props: TodoItemProps) => {
             <li
             className={"todo-item item-" + props.todo.id}
             style={style}
-            onClick={() => handleTextBoxClick}>
+            onClick={(e) => handleTextBoxClick(e)}>
                 <ContentEditable
                     className="todo-text"
                     html={props.todo.text}
-                    onChange={() => handleChange}
-                    onKeyDown={() => handleKeyDown}
+                    onChange={(e) => handleChange(e)}
+                    onKeyDown={(e) => handleKeyDown(e)}
                 />
                 <div 
                 className="todo-circle"
                 style={circlestyle}
-                onClick={handleCheckboxClick}>
+                onClick={() => handleCheckboxClick()}>
                 <i className="fa-solid fa-check"></i>
                 </div>
             </li>

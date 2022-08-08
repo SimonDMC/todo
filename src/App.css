@@ -32,6 +32,10 @@ input {
   opacity: 1;
 }
 
+.login:hover {
+  background-color: #00000020 !important;
+}
+
 @keyframes background-gradient {
   0% { background-position: 0 0; }
   50% { background-position: 100% 100%; }

@@ -17,3 +17,12 @@ export function getInnerHeight(el: HTMLElement) {
     height -= parseInt(getComputedStyle(el).paddingTop) + parseInt(getComputedStyle(el).paddingBottom);
     return height;
 }
+
+export function getDataOverridePromise() {
+    return new Promise(function(resolve, reject) {
+        let accept = document.querySelector(".accept-override")!;
+        let refuse = document.querySelector(".refuse-override")!;
+        accept?.addEventListener("click", resolve);
+        refuse?.addEventListener("click", reject);
+    });
+}

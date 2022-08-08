@@ -44,7 +44,7 @@ const TodoBoard = (props: TodoBoardProps) => {
                 <input 
                     type='text' 
                     placeholder='Board Name'
-                    onChange={() => props.handleNameChange}
+                    onChange={(e) => props.handleNameChange(e)}
                     style={nameStyle}
                     value={props.todos.name}>
                 </input>
