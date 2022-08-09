@@ -7,8 +7,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, User as FirebaseUser, onA
 import { useAuthState } from "react-firebase-hooks/auth";
 import { app, getUserData, saveUserData } from "./firebase";
 import { isEqual } from 'lodash';
-import { Popup } from './popup';
-import { getDataOverridePromise } from './util';
+import { getDataOverridePromise, overridePopup } from './util';
 
 export type TodoItemType = {
   id: string;
@@ -63,7 +62,7 @@ function App() {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        compareLocalAndUserData(user);
+        compareLocalAndUserData(user, false);
       }
     });
   }, [auth]);
@@ -74,20 +73,22 @@ function App() {
     if (!result || !result.user) {
       return;
     }
-    compareLocalAndUserData(result.user);
+    compareLocalAndUserData(result.user, true);
   }
 
   const logOut = () => {
     auth.signOut();
   }
 
-  const compareLocalAndUserData = async (user: FirebaseUser) => {
+  const compareLocalAndUserData = async (user: FirebaseUser, newLogin: boolean) => {
     /*
       Order of operations:
-        If local data matches user data, leave it as is.
-        If user data is empty, save local data to it.
-        If local data is empty, set user data to it.
-        If user data and local data both exist and are different, open prompt to overwrite local data.
+        1 - If local data matches user data, leave it as is.
+        2 - If user data is empty, save local data to it.
+        3 - If local data is empty, set user data to it.
+        4 - If user data and local data both exist and are different:
+          4.1 - If the user has just logged in, open prompt to overwrite local data.
+          4.2 - If the user is already logged in, set local data to user data.
     */
     let userData = await getUserData(user.uid);
     // remove animation attr for comparison
@@ -96,39 +97,40 @@ function App() {
         delete element.animation;
       });
     }
-    
-    const overridePopup = new Popup({
-      title: 'Data Conflict',
-      content: `Your cloud data and local data are different. Which one do you want to use?
-        big-margin§{btn-refuse-override}[Local Data]     {btn-accept-override}[Cloud Data]`,
-      sideMargin: '1.5em',
-      fontSizeMultiplier: '1.2',
-      dynamicHeight: true,
-      backgroundColor: '#FFFEE3',
-    });
 
+    // 1
     if (isEqual(userData, todos)) {
       console.log('Local data matches user data.');
+    // 2
     } else if (!userData || Object.keys(userData).length === 0) { // empty
       console.log('User data is empty.');
       saveUserData(user.uid, todos);
+    // 3
     } else if (todos.todoItems.length === 1) { // empty apart from placeholder item
       console.log('Local data is empty.');
       setTodos(userData as TodoBoardObject);
       localStorage.setItem('todo-list', JSON.stringify(userData));
+    // 4
     } else {
       console.log('User data and local data are different.');
-      overridePopup.show();
-      getDataOverridePromise().then(() => {
-        // accepted local override
+      // 4.1
+      if (newLogin) {
+        overridePopup.show();
+        getDataOverridePromise().then(() => {
+          // accepted local override
+          setTodos(userData as TodoBoardObject);
+          localStorage.setItem('todo-list', JSON.stringify(userData));
+          overridePopup.hide();
+        }).catch(() => {
+          // rejected local override (local overrides cloud)
+          saveUserData(user.uid, todos);
+          overridePopup.hide();
+        });
+      // 4.2
+      } else {
         setTodos(userData as TodoBoardObject);
         localStorage.setItem('todo-list', JSON.stringify(userData));
-        overridePopup.hide();
-      }).catch(() => {
-        // rejected local override (local overrides cloud)
-        saveUserData(user.uid, todos);
-        overridePopup.hide();
-      });
+      }
     }
   }
   
