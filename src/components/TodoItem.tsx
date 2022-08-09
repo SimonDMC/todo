@@ -1,13 +1,11 @@
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
-import { placeCaretAtEnd, getInnerHeight } from '../util';
+import { placeCaretAtEnd, getInnerHeight, randomString } from '../util';
 import { TodoItemType } from '../App';
 
 interface TodoItemProps {
     todo: TodoItemType;
     todos: TodoItemType[];
     setTodos: Function;
-    nextID: number;
-    setNextID: Function;
 }
 
 const TodoItem = (props: TodoItemProps) => {
@@ -79,14 +77,11 @@ const TodoItem = (props: TodoItemProps) => {
             // if filling in an empty todo, create a new empty one
             if (oldValue === '' && newValue !== '') {
                 props.todos.push({
-                    id: props.nextID,
+                    id: randomString(4),
                     text: '',
                     extraLines: 0,
                     animation: true,
                 });
-                
-                // update nextID
-                props.setNextID(props.nextID + 1)
             }
 
             // calculate amount of extra lines

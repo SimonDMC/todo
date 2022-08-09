@@ -4,8 +4,6 @@ import { TodoBoardObject } from '../App';
 interface TodoBoardProps {
     todos: TodoBoardObject;
     setTodos: Function;
-    nextID: number;
-    setNextID: Function;
     handleNameChange: Function;
 }
 
@@ -55,8 +53,6 @@ const TodoBoard = (props: TodoBoardProps) => {
                         todo={todo}
                         todos={props.todos.todoItems}
                         setTodos={props.setTodos}
-                        nextID={props.nextID}
-                        setNextID={props.setNextID}
                         />
                     );
                 })}

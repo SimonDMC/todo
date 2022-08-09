@@ -11,7 +11,7 @@ import { Popup } from './popup';
 import { getDataOverridePromise } from './util';
 
 export type TodoItemType = {
-  id: number;
+  id: string;
   text: string;
   extraLines: number;
   animation?: boolean;
@@ -29,7 +29,7 @@ function App() {
     "name": "",
     "todoItems": [{
       text: '',
-      id: 0,
+      id: 'default',
     }]
   } as TodoBoardObject;
 
@@ -38,7 +38,6 @@ function App() {
   });
 
   const [todos, setTodos] = useState(importedTodos);
-  const [nextID, setNextID] = useState(localStorage.getItem('todo-nextID') ? parseInt(localStorage.getItem('todo-nextID')!) : 1);
 
   const setTodosWrapper = (passedTodos: TodoItemType[]) => {
     let newTodos = { ...todos };
@@ -46,11 +45,6 @@ function App() {
     setTodos(newTodos);
     localStorage.setItem('todo-list', JSON.stringify(newTodos));
     if (user) saveUserData(user.uid, newTodos);
-  }
-
-  const setNextIDWrapper = (nextID: number) => {
-    setNextID(nextID);
-    localStorage.setItem('todo-nextID', nextID.toString());
   }
 
   const handleNameChange = (e: Event) => {
@@ -150,8 +144,6 @@ function App() {
       <TodoBoard 
         todos={todos} 
         setTodos={setTodosWrapper}
-        nextID={nextID}
-        setNextID={setNextIDWrapper}
         handleNameChange={handleNameChange}
       />
     </div>
