@@ -23,9 +23,9 @@ const TodoItem = (props: TodoItemProps) => {
         color: '#818181B0',
         fontWeight: '500',
         fontSize: '2em',
-        border: '2px solid #81818180',
-        borderRadius: '25px',
-        top: 13 + index * 12.5 + prevExtraLines * 6.1 + '%',
+        border: '0.07em solid #81818180',
+        borderRadius: '0.8em',
+        top: 2.6 + index * 2.5 + prevExtraLines * 1.22 + 'em',
         marginLeft: '3%',
         marginRight: '3%',
         padding: '2% 3%',
@@ -36,11 +36,12 @@ const TodoItem = (props: TodoItemProps) => {
         transition: 'opacity 0.3s, top 0.5s',
         width: '94%',
         cursor: 'text',
+        wordBreak: 'break-word',
         animation: props.todo.animation ? 'fade-in .3s' : 'none',
     }
 
     const circlestyle: React.CSSProperties = {
-        border: '2px solid #81818180',
+        border: '0.07em solid #81818180',
         borderRadius: '100%',
         width: '1.2em',
         height: '1.2em',

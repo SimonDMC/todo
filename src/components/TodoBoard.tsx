@@ -14,16 +14,18 @@ const TodoBoard = (props: TodoBoardProps) => {
         width: '40em',
         height: '70%',
         border: '7px solid #fff',
-        borderRadius: '50px',
+        borderRadius: '3em',
         backgroundColor: '#FDFFF2',
         listStyle: 'none',
-        boxShadow: '0 0 15px #00000040',
+        boxShadow: '0 0 1em #00000040',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         position: 'relative',
         overflowY: 'auto',
         scrollBehavior: 'smooth',
+        fontSize: 'min(1em, 2.2vw)',
+        marginBottom: '3em',
     }
 
     const nameStyle: React.CSSProperties = {

@@ -9,7 +9,7 @@ interface LoginProps {
 export default function Login(props: LoginProps) {
 
     const style: React.CSSProperties = {
-        fontSize: '2em',
+        fontSize: 'min(2em, 6vw)',
         fontWeight: '700',
         position: 'absolute',
         top: '.5em',

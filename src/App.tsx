@@ -140,12 +140,12 @@ function App() {
         loginWithGoogle={loginWithGoogle}
         logOut={logOut}
       />
-      <Title title="To Do:" />
       <TodoBoard 
         todos={todos} 
         setTodos={setTodosWrapper}
         handleNameChange={handleNameChange}
       />
+      <Title title="To Do:" />
     </div>
   );
 }

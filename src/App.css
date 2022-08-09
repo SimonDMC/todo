@@ -11,11 +11,13 @@
   background-size: 500% 500%;
   animation: background-gradient 60s linear infinite;
   width: 100vw;
-  height: 100vh;
+  position: fixed;
+  height: 100%;
   font-family: 'Inter', sans-serif;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: center;
+  font-size: 1rem;
 }
 
 [contenteditable] {
