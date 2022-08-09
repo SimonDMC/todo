@@ -171,6 +171,9 @@ const TodoItem = (props: TodoItemProps) => {
                     html={props.todo.text}
                     onChange={(e) => handleChange(e)}
                     onKeyDown={(e) => handleKeyDown(e)}
+                    data-gramm="false"
+                    data-gramm_editor="false"
+                    data-enable-grammarly="false"
                 />
                 <div 
                 className="todo-circle"
