@@ -48,4 +48,5 @@ export const overridePopup = new Popup({
     fontSizeMultiplier: '1.2',
     dynamicHeight: true,
     backgroundColor: '#FFFEE3',
+    allowClose: false,
   });

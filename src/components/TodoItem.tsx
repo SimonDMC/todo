@@ -1,6 +1,7 @@
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { placeCaretAtEnd, getInnerHeight, randomString } from '../util';
 import { TodoItemType } from '../App';
+import { useEffect } from 'react';
 
 interface TodoItemProps {
     todo: TodoItemType;
@@ -18,6 +19,12 @@ const TodoItem = (props: TodoItemProps) => {
     props.todos.slice(0, index).forEach((todo) => {
         prevExtraLines += todo.extraLines;
     });
+
+    useEffect(() => {
+        props.setTodos(props.todos.filter((todo) => {
+            return !todo.completed;
+        }));
+    }, [props.todo.completed]);
 
     const style: React.CSSProperties = {
         color: '#818181B0',
@@ -64,6 +71,9 @@ const TodoItem = (props: TodoItemProps) => {
             let baseElement = (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement);
             // let fade out
             baseElement.style.opacity = '0';
+
+            // mark as complete (for deletion)
+            props.todo.completed = true;
 
             // if previous element exists, select it, otherwise select next element
             let el = baseElement.previousElementSibling?.firstChild;
@@ -134,6 +144,9 @@ const TodoItem = (props: TodoItemProps) => {
         // check for not empty todo
         if (props.todo.text === '') return;
 
+        // mark as complete
+        props.todo.completed = true;
+
         // play sound
         audio.play();
 
@@ -160,6 +173,9 @@ const TodoItem = (props: TodoItemProps) => {
     }
 
     const audio = new Audio(ding);
+
+    // dont render if completed
+    if (props.todo.completed) return null;
 
     return (
             <li

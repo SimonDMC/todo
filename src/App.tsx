@@ -14,6 +14,7 @@ export type TodoItemType = {
   text: string;
   extraLines: number;
   animation?: boolean;
+  completed?: boolean;
 }
 
 export type TodoBoardObject = {
@@ -116,7 +117,7 @@ function App() {
       // 4.1
       if (newLogin) {
         overridePopup.show();
-        getDataOverridePromise().then(() => {
+        await getDataOverridePromise().then(() => {
           // accepted local override
           setTodos(userData as TodoBoardObject);
           localStorage.setItem('todo-list', JSON.stringify(userData));
