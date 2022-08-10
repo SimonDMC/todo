@@ -22,7 +22,7 @@ const TodoItem = (props: TodoItemProps) => {
 
     useEffect(() => {
         props.setTodos(props.todos.filter((todo) => {
-            return todo.completed === false;
+            return todo.completed !== true;
         }));
     }, [props.todo.completed]);
 
