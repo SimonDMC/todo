@@ -20,14 +20,25 @@ export const app = initializeApp(firebaseConfig);
 // Initialize database and get a reference to the service
 const db = getDatabase(app);
 
+interface UserData {
+    board?: TodoBoardObject;
+    boardIndex?: number;
+    allBoards?: TodoBoardObject[];
+}
+
 // save user data
-export function saveUserData(userId: string, data: TodoBoardObject) {
-    set(ref(db, `users/${userId}`), data);
+export function saveUserData(userId: string, params: UserData) {
+    if ('board' in params && 'boardIndex' in params)
+        set(ref(db, `users/${userId}/${params.boardIndex}`), params.board);
+    else if ('allBoards' in params) {
+        set(ref(db, `users/${userId}`), params.allBoards);
+    } else {
+        console.log('saveUserData: invalid params');
+    }
 }
 
 // get user data
 export async function getUserData(userId: string) {
     const snapshot = await get(ref(db, `users/${userId}`));
-    return snapshot.val();
-    
+    return snapshot.val();   
 }

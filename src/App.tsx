@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import Title from './components/Title';
-import TodoBoard from './components/TodoBoard';
+import TodoBoardList from './components/TodoBoardList';
 import Login from './components/Login';
 import { getAuth, GoogleAuthProvider, signInWithPopup, User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -19,40 +19,60 @@ export type TodoItemType = {
 
 export type TodoBoardObject = {
   name: string;
+  id: string;
   todoItems: TodoItemType[];
 }
 
 function App() {
 
-  const importedTodos = localStorage.getItem('todo-list') ? JSON.parse(localStorage.getItem('todo-list') as string) as TodoBoardObject :
-  {
+  const importedTodos = localStorage.getItem('todo-list') ? JSON.parse(localStorage.getItem('todo-list') as string) as TodoBoardObject[] :
+  [{
     "name": "",
+    "id": "default-board",
     "todoItems": [{
       text: '',
-      id: 'default',
+      id: 'default-item',
     }]
-  } as TodoBoardObject;
+  }] as TodoBoardObject[];
 
-  importedTodos.todoItems.forEach((element: TodoItemType) => {
-    delete element.animation;
+  importedTodos.forEach((board: TodoBoardObject) => {
+    board.todoItems.forEach((element: TodoItemType) => {
+      delete element.animation;
+    });
   });
 
   const [todos, setTodos] = useState(importedTodos);
 
-  const setTodosWrapper = (passedTodos: TodoItemType[]) => {
-    let newTodos = { ...todos };
-    newTodos.todoItems = passedTodos;
-    setTodos(newTodos);
-    localStorage.setItem('todo-list', JSON.stringify(newTodos));
-    if (user) saveUserData(user.uid, newTodos);
+  const setTodosWrapper = (passedTodos: TodoItemType[], boardID: string) => {
+    // clone boards by value
+    let todoBoards = todos.slice();
+    // find modified board
+    let currentBoard = todoBoards.find(obj => obj.id === boardID);
+    if (currentBoard === undefined) return;
+    // clone modified board by value and set new todo items
+    let modifiedBoard = { ...currentBoard, todoItems: passedTodos };
+    // find index of old board and replace it with new board
+    let index = todoBoards.indexOf(currentBoard);
+    todoBoards[index] = modifiedBoard;
+    setTodos(todoBoards);
+    localStorage.setItem('todo-list', JSON.stringify(todoBoards));
+    if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index});
   }
 
-  const handleNameChange = (e: Event) => {
-    let newTodos = { ...todos };
-    newTodos.name = (e.target as HTMLTextAreaElement).value;
-    setTodos(newTodos);
-    localStorage.setItem('todo-list', JSON.stringify(newTodos));
-    if (user) saveUserData(user.uid, newTodos);
+  const handleNameChange = (e: Event, boardID: string) => {
+    // clone boards by value
+    let todoBoards = todos.slice();
+    // find modified board
+    let currentBoard = todoBoards.find(obj => obj.id === boardID);
+    if (currentBoard === undefined) return;
+    // clone modified board by value and set new name
+    let modifiedBoard = { ...currentBoard, name: (e.target as HTMLInputElement).value };
+    // find index of old board and replace it with new board
+    let index = todoBoards.indexOf(currentBoard);
+    todoBoards[index] = modifiedBoard;
+    setTodos(todoBoards);
+    localStorage.setItem('todo-list', JSON.stringify(todoBoards));
+    if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index});
   }
 
   const auth = getAuth(app);
@@ -91,12 +111,13 @@ function App() {
           4.1 - If the user has just logged in, open prompt to overwrite local data.
           4.2 - If the user is already logged in, set local data to user data.
     */
-    let userData = await getUserData(user.uid);
+    let userData = await getUserData(user.uid) as TodoBoardObject[];
     // remove animation attr for comparison
     if (userData && Object.keys(userData).length !== 0) { // non-empty user data check
-      userData.todoItems.forEach((element: TodoItemType) => {
+      userData.forEach((board: TodoBoardObject) => {
+        board.todoItems.forEach((element: TodoItemType) => {
         delete element.animation;
-      });
+      })});
     }
 
     // 1
@@ -105,11 +126,11 @@ function App() {
     // 2
     } else if (!userData || Object.keys(userData).length === 0) { // empty
       console.log('User data is empty.');
-      saveUserData(user.uid, todos);
+      saveUserData(user.uid, {'allBoards': todos});
     // 3
-    } else if (todos.todoItems.length === 1) { // empty apart from placeholder item
+    } else if (todos.length === 1 && todos[0].todoItems.length === 1) { // empty apart from placeholder item
       console.log('Local data is empty.');
-      setTodos(userData as TodoBoardObject);
+      setTodos(userData as TodoBoardObject[]);
       localStorage.setItem('todo-list', JSON.stringify(userData));
     // 4
     } else {
@@ -119,17 +140,17 @@ function App() {
         overridePopup.show();
         await getDataOverridePromise().then(() => {
           // accepted local override
-          setTodos(userData as TodoBoardObject);
+          setTodos(userData as TodoBoardObject[]);
           localStorage.setItem('todo-list', JSON.stringify(userData));
           overridePopup.hide();
         }).catch(() => {
           // rejected local override (local overrides cloud)
-          saveUserData(user.uid, todos);
+          saveUserData(user.uid, {'allBoards': todos});
           overridePopup.hide();
         });
       // 4.2
       } else {
-        setTodos(userData as TodoBoardObject);
+        setTodos(userData as TodoBoardObject[]);
         localStorage.setItem('todo-list', JSON.stringify(userData));
       }
     }
@@ -143,8 +164,8 @@ function App() {
         loginWithGoogle={loginWithGoogle}
         logOut={logOut}
       />
-      <TodoBoard 
-        todos={todos} 
+      <TodoBoardList 
+        todoBoards={todos}
         setTodos={setTodosWrapper}
         handleNameChange={handleNameChange}
       />

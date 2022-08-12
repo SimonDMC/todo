@@ -1,5 +1,5 @@
 import TodoItem from './TodoItem';
-import { TodoBoardObject } from '../App';
+import { TodoBoardObject, TodoItemType } from '../App';
 
 interface TodoBoardProps {
     todos: TodoBoardObject;
@@ -12,7 +12,7 @@ const TodoBoard = (props: TodoBoardProps) => {
 
     const style: React.CSSProperties = {
         width: '40em',
-        height: '70%',
+        height: '100%',
         border: '7px solid #fff',
         borderRadius: '3em',
         backgroundColor: '#FDFFF2',
@@ -24,8 +24,6 @@ const TodoBoard = (props: TodoBoardProps) => {
         position: 'relative',
         overflowY: 'auto',
         scrollBehavior: 'smooth',
-        fontSize: 'min(1em, 2.2vw)',
-        marginBottom: '3em',
     }
 
     const nameStyle: React.CSSProperties = {
@@ -37,6 +35,10 @@ const TodoBoard = (props: TodoBoardProps) => {
         color: '#00000080',
     }
 
+    const setTodos = (todos: TodoItemType[]) => {
+        props.setTodos(todos, props.todos.id);
+    }
+
     return (
             <ul
             className="todo-list"
@@ -44,7 +46,7 @@ const TodoBoard = (props: TodoBoardProps) => {
                 <input 
                     type='text' 
                     placeholder='Board Name'
-                    onChange={(e) => props.handleNameChange(e)}
+                    onChange={(e) => props.handleNameChange(e, props.todos.id)}
                     style={nameStyle}
                     value={props.todos.name}>
                 </input>
@@ -54,7 +56,7 @@ const TodoBoard = (props: TodoBoardProps) => {
                         key={todo.id}
                         todo={todo}
                         todos={props.todos.todoItems}
-                        setTodos={props.setTodos}
+                        setTodos={setTodos}
                         />
                     );
                 })}

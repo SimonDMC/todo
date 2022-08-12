@@ -88,7 +88,7 @@ const TodoItem = (props: TodoItemProps) => {
             // if filling in an empty todo, create a new empty one
             if (oldValue === '' && newValue !== '') {
                 props.todos.push({
-                    id: randomString(4),
+                    id: randomString(6),
                     text: '',
                     extraLines: 0,
                     animation: true,
