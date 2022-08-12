@@ -21,9 +21,10 @@ const TodoBoard = (props: TodoBoardProps) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        position: 'relative',
         overflowY: 'auto',
         scrollBehavior: 'smooth',
+        overflowX: 'hidden',
+        position: 'relative',
     }
 
     const nameStyle: React.CSSProperties = {
