@@ -5,7 +5,7 @@ interface TitleProps {
 const Title = (props: TitleProps) => {
 
     const style: React.CSSProperties = {
-        fontSize: 'min(8em, 30vw)',
+        fontSize: 'min(8em, 28vw)',
         fontWeight: 800,
         color: '#fff',
         textAlign: 'center',

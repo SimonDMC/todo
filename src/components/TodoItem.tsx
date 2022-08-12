@@ -24,6 +24,7 @@ const TodoItem = (props: TodoItemProps) => {
         props.setTodos(props.todos.filter((todo) => {
             return todo.completed !== true;
         }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.todo.completed]);
 
     const style: React.CSSProperties = {

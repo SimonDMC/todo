@@ -33,7 +33,21 @@ function App() {
       text: '',
       id: 'default-item',
     }]
-  }] as TodoBoardObject[];
+  }/*,{
+    "name": "",
+    "id": "default-2",
+    "todoItems": [{
+      text: '',
+      id: 'default-item',
+    }]
+  },{
+    "name": "",
+    "id": "default-3",
+    "todoItems": [{
+      text: '',
+      id: 'default-item',
+    }]
+  }*/] as TodoBoardObject[];
 
   importedTodos.forEach((board: TodoBoardObject) => {
     board.todoItems.forEach((element: TodoItemType) => {
@@ -86,6 +100,7 @@ function App() {
         compareLocalAndUserData(user, false);
       }
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
 
   const loginWithGoogle = async () => {

@@ -11,7 +11,7 @@ interface TodoBoardProps {
 const TodoBoard = (props: TodoBoardProps) => {
 
     const style: React.CSSProperties = {
-        width: '40em',
+        width: '35em',
         height: '100%',
         border: '7px solid #fff',
         borderRadius: '3em',
