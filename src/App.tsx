@@ -7,7 +7,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, User as FirebaseUser, onA
 import { useAuthState } from "react-firebase-hooks/auth";
 import { app, getUserData, saveUserData } from "./firebase";
 import { isEqual } from 'lodash';
-import { getDataOverridePromise, overridePopup } from './util';
+import { getDataOverridePromise, overridePopup, randomString } from './util';
 
 export type TodoItemType = {
   id: string;
@@ -21,6 +21,7 @@ export type TodoBoardObject = {
   name: string;
   id: string;
   todoItems: TodoItemType[];
+  animation?: boolean;
 }
 
 function App() {
@@ -28,28 +29,15 @@ function App() {
   const importedTodos = localStorage.getItem('todo-list') ? JSON.parse(localStorage.getItem('todo-list') as string) as TodoBoardObject[] :
   [{
     "name": "",
-    "id": "default-board",
+    "id": randomString(6),
     "todoItems": [{
       text: '',
-      id: 'default-item',
+      id: randomString(6),
     }]
-  }/*,{
-    "name": "",
-    "id": "default-2",
-    "todoItems": [{
-      text: '',
-      id: 'default-item',
-    }]
-  },{
-    "name": "",
-    "id": "default-3",
-    "todoItems": [{
-      text: '',
-      id: 'default-item',
-    }]
-  }*/] as TodoBoardObject[];
+  }] as TodoBoardObject[];
 
   importedTodos.forEach((board: TodoBoardObject) => {
+    delete board.animation;
     board.todoItems.forEach((element: TodoItemType) => {
       delete element.animation;
     });
@@ -65,6 +53,8 @@ function App() {
     if (currentBoard === undefined) return;
     // clone modified board by value and set new todo items
     let modifiedBoard = { ...currentBoard, todoItems: passedTodos };
+    // remove animation
+    delete modifiedBoard.animation;
     // find index of old board and replace it with new board
     let index = todoBoards.indexOf(currentBoard);
     todoBoards[index] = modifiedBoard;
@@ -87,6 +77,43 @@ function App() {
     setTodos(todoBoards);
     localStorage.setItem('todo-list', JSON.stringify(todoBoards));
     if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index});
+  }
+
+  const addBoard = (index: number) => {
+    if (todos.length >= 3) return;
+    // clone boards by value
+    let todoBoards = todos.slice();
+    todoBoards.splice(index, 0, {
+      name: '',
+      id: randomString(6),
+      animation: true,
+      todoItems: [{
+        text: '',
+        id: randomString(6),
+        extraLines: 0,
+      }]
+    });
+    setTodos(todoBoards);
+    localStorage.setItem('todo-list', JSON.stringify(todoBoards));
+    if (user) saveUserData(user.uid, {'allBoards': todoBoards});
+  }
+
+  const removeBoard = (index: number) => {
+    // clone boards by value
+    let todoBoards = todos.slice();
+    todoBoards.splice(index, 1);
+    setTodos(todoBoards);
+    localStorage.setItem('todo-list', JSON.stringify(todoBoards));
+    if (user) saveUserData(user.uid, {'allBoards': todoBoards});
+  }
+
+  const moveBoard = (from: number, to: number) => {
+    // clone boards by value
+    let todoBoards = todos.slice();
+    [todoBoards[from], todoBoards[to]] = [todoBoards[to], todoBoards[from]];
+    setTodos(todoBoards);
+    localStorage.setItem('todo-list', JSON.stringify(todoBoards));
+    if (user) saveUserData(user.uid, {'allBoards': todoBoards});
   }
 
   const auth = getAuth(app);
@@ -127,12 +154,14 @@ function App() {
           4.2 - If the user is already logged in, set local data to user data.
     */
     let userData = await getUserData(user.uid) as TodoBoardObject[];
-    // remove animation attr for comparison
+    // remove animation attributes for comparison
     if (userData && Object.keys(userData).length !== 0) { // non-empty user data check
       userData.forEach((board: TodoBoardObject) => {
+        delete board.animation;
         board.todoItems.forEach((element: TodoItemType) => {
-        delete element.animation;
-      })});
+          delete element.animation;
+        }
+      )});
     }
 
     // 1
@@ -183,6 +212,9 @@ function App() {
         todoBoards={todos}
         setTodos={setTodosWrapper}
         handleNameChange={handleNameChange}
+        addBoard={addBoard}
+        removeBoard={removeBoard}
+        moveBoard={moveBoard}
       />
       <Title title="To Do:" />
     </div>

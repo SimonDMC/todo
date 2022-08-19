@@ -32,7 +32,7 @@ export function getDataOverridePromise() {
 // create a random string of length n
 export function randomString(n: number) {
     let result = "";
-    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     for (let i = 0; i < n; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }

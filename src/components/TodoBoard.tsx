@@ -3,8 +3,13 @@ import { TodoBoardObject, TodoItemType } from '../App';
 
 interface TodoBoardProps {
     todos: TodoBoardObject;
+    index: number;
+    total: number;
     setTodos: Function;
     handleNameChange: Function;
+    addBoard: Function;
+    removeBoard: Function;
+    moveBoard: Function;
 }
 
 
@@ -48,19 +53,100 @@ const TodoBoard = (props: TodoBoardProps) => {
 
     const bottomBarStyle: React.CSSProperties = {
         width: '100%',
-        height: 'calc((3em - 0.4em) / 1.5)',
+        height: '2.6em',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
         position: 'absolute',
         bottom: '0',
+    }
+
+    const buttonStyle: React.CSSProperties = {
+        background: 'none',
         fontSize: '1.5em',
+        border: '0.1em solid transparent',
         color: '#777',
+        cursor: 'pointer',
     }
 
     const setTodos = (todos: TodoItemType[]) => {
         props.setTodos(todos, props.todos.id);
     }
+
+    // all of this is completely unmaintainable but idc im done with this project
+    const fadeRemove = async () => {
+        if (props.total === 1) return;
+        let el = (document.querySelector(`.board-wrapper.${props.todos.id}`) as HTMLElement)
+        el.style.opacity = '0';
+        await new Promise(resolve => setTimeout(resolve, 300));
+        props.removeBoard(props.index);
+        await new Promise(resolve => setTimeout(resolve, 1));
+        el.style.transitionProperty = 'none';
+        el.style.opacity = '1';
+        el.style.left = `calc(50% - 17.5em + ${(props.index + 1.5 - props.total / 2) * 37}em)`;
+        if (props.total === 3) {
+            let lastSibling = el.nextSibling as HTMLElement;
+            if (lastSibling) {
+                lastSibling.style.transitionProperty = 'none';
+                lastSibling.style.opacity = '1';
+                lastSibling.style.left = `calc(50% - 17.5em + ${(props.index + 2.5 - props.total / 2) * 37}em)`;
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 10));
+        el.style.transitionProperty = 'opacity, left';
+        el.style.left = `calc(50% - 17.5em + ${(props.index + 1 - props.total / 2) * 37}em)`;
+        if (props.total === 3) {
+            let lastSibling = el.nextSibling as HTMLElement;
+            if (lastSibling) {
+                lastSibling.style.transitionProperty = 'opacity, left';
+                lastSibling.style.left = `calc(50% - 17.5em + ${(props.index + 2 - props.total / 2) * 37}em)`;
+            }
+        }
+    }
+
+    const moveLeft = async () => {
+        if (props.index === 0) return;
+        let el = (document.querySelector(`.board-wrapper.${props.todos.id}`) as HTMLElement);
+        let sibling = el.previousSibling as HTMLElement;
+        el.style.left = `calc(50% - 17.5em + ${(props.index - 0.5 - props.total / 2) * 37}em)`;
+        sibling.style.left = `calc(50% - 17.5em + ${(props.index + 0.5 - props.total / 2) * 37}em)`;
+        await new Promise(resolve => setTimeout(resolve, 300));
+        props.moveBoard(props.index, props.index - 1);
+        el.style.transitionProperty = 'none';
+        el.style.left = `calc(50% - 17.5em + ${(props.index + 0.5 - props.total / 2) * 37}em)`;
+        sibling.style.transitionProperty = 'none';
+        sibling.style.left = `calc(50% - 17.5em + ${(props.index - 0.5 - props.total / 2) * 37}em)`;
+        await new Promise(resolve => setTimeout(resolve, 1));
+        el.style.transitionProperty = 'opacity, left';
+        sibling.style.transitionProperty = 'opacity, left';
+    }
+
+    const moveRight = async () => {
+        if (props.index === props.total - 1) return;
+        let el = (document.querySelector(`.board-wrapper.${props.todos.id}`) as HTMLElement);
+        let sibling = el.nextSibling as HTMLElement;
+        el.style.left = `calc(50% - 17.5em + ${(props.index + 1.5 - props.total / 2) * 37}em)`;
+        sibling.style.left = `calc(50% - 17.5em + ${(props.index + 0.5 - props.total / 2) * 37}em)`;
+        await new Promise(resolve => setTimeout(resolve, 300));
+        props.moveBoard(props.index, props.index + 1);
+        el.style.transitionProperty = 'none';
+        el.style.left = `calc(50% - 17.5em + ${(props.index + 0.5 - props.total / 2) * 37}em)`;
+        sibling.style.transitionProperty = 'none';
+        sibling.style.left = `calc(50% - 17.5em + ${(props.index + 1.5 - props.total / 2) * 37}em)`;
+        await new Promise(resolve => setTimeout(resolve, 1));
+        el.style.transitionProperty = 'opacity, left';
+        sibling.style.transitionProperty = 'opacity, left';
+    }
+
+    const removeAnimation = async () => {
+        // remove animation immediately
+        if (props.todos.animation) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            setTodos(props.todos.todoItems);
+        }
+    }
+
+    removeAnimation();
 
     return (
         <ul
@@ -86,10 +172,10 @@ const TodoBoard = (props: TodoBoardProps) => {
                 })}
             </div>
             <div className='bottom-bar' style={bottomBarStyle}>
-                <i className="fa-solid fa-arrow-left"></i>
-                <i className="fa-solid fa-arrow-right"></i>
-                <i className="fa-solid fa-plus"></i>
-                <i className="fa-solid fa-minus"></i>
+                <button style={buttonStyle} onClick={() => moveLeft()}><i className="fa-solid fa-arrow-left"></i></button>
+                <button style={buttonStyle} onClick={() => moveRight()}><i className="fa-solid fa-arrow-right"></i></button>
+                <button style={buttonStyle} onClick={() => props.addBoard(props.index + 1)}><i className="fa-solid fa-plus"></i></button>
+                <button style={buttonStyle} onClick={() => fadeRemove()}><i className="fa-solid fa-minus"></i></button>
             </div>
         </ul>
     );
