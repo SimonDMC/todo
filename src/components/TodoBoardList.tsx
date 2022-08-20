@@ -12,8 +12,6 @@ interface TodoBoardListProps {
 }
 
 export default function TodoBoardList(props: TodoBoardListProps) {
-
-    console.log('rerendering');
     
     const [displayIndex, setDisplayIndex] = useState(0);
     

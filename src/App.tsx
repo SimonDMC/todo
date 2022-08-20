@@ -122,9 +122,9 @@ function App() {
   const [user] = useAuthState(auth);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        compareLocalAndUserData(user, false);
+    onAuthStateChanged(auth, (signedInUser) => {
+      if (signedInUser) {
+        compareLocalAndUserData(signedInUser, false);
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +143,7 @@ function App() {
     auth.signOut();
   }
 
-  const compareLocalAndUserData = async (user: FirebaseUser, newLogin: boolean) => {
+  const compareLocalAndUserData = async (firebaseUser: FirebaseUser, newLogin: boolean) => {
     /*
       Order of operations:
         1 - If local data matches user data, leave it as is.
@@ -153,7 +153,7 @@ function App() {
           4.1 - If the user has just logged in, open prompt to overwrite local data.
           4.2 - If the user is already logged in, set local data to user data.
     */
-    let userData = await getUserData(user.uid) as TodoBoardObject[];
+    let userData = await getUserData(firebaseUser.uid) as TodoBoardObject[];
     // remove animation attributes for comparison
     if (userData && Object.keys(userData).length !== 0) { // non-empty user data check
       userData.forEach((board: TodoBoardObject) => {
@@ -170,11 +170,11 @@ function App() {
     // 2
     } else if (!userData || Object.keys(userData).length === 0) { // empty
       console.log('User data is empty.');
-      saveUserData(user.uid, {'allBoards': todos});
+      saveUserData(firebaseUser.uid, {'allBoards': todos});
     // 3
     } else if (todos.length === 1 && todos[0].todoItems.length === 1) { // empty apart from placeholder item
       console.log('Local data is empty.');
-      setTodos(userData as TodoBoardObject[]);
+      setTodos(userData);
       localStorage.setItem('todo-list', JSON.stringify(userData));
     // 4
     } else {
@@ -184,17 +184,17 @@ function App() {
         overridePopup.show();
         await getDataOverridePromise().then(() => {
           // accepted local override
-          setTodos(userData as TodoBoardObject[]);
+          setTodos(userData);
           localStorage.setItem('todo-list', JSON.stringify(userData));
           overridePopup.hide();
         }).catch(() => {
           // rejected local override (local overrides cloud)
-          saveUserData(user.uid, {'allBoards': todos});
+          saveUserData(firebaseUser.uid, {'allBoards': todos});
           overridePopup.hide();
         });
       // 4.2
       } else {
-        setTodos(userData as TodoBoardObject[]);
+        setTodos(userData);
         localStorage.setItem('todo-list', JSON.stringify(userData));
       }
     }
