@@ -172,10 +172,10 @@ const TodoBoard = (props: TodoBoardProps) => {
                 })}
             </div>
             <div className='bottom-bar' style={bottomBarStyle}>
-                <button style={buttonStyle} onClick={() => moveLeft()}><i className="fa-solid fa-arrow-left"></i></button>
-                <button style={buttonStyle} onClick={() => moveRight()}><i className="fa-solid fa-arrow-right"></i></button>
-                <button style={buttonStyle} onClick={() => props.addBoard(props.index + 1)}><i className="fa-solid fa-plus"></i></button>
-                <button style={buttonStyle} onClick={() => fadeRemove()}><i className="fa-solid fa-minus"></i></button>
+                <button aria-label='Move Board Left' style={buttonStyle} onClick={() => moveLeft()}><i className="fa-solid fa-arrow-left"></i></button>
+                <button aria-label='Move Board Right' style={buttonStyle} onClick={() => moveRight()}><i className="fa-solid fa-arrow-right"></i></button>
+                <button aria-label='Add Board' style={buttonStyle} onClick={() => props.addBoard(props.index + 1)}><i className="fa-solid fa-plus"></i></button>
+                <button aria-label='Remove Board' style={buttonStyle} onClick={() => fadeRemove()}><i className="fa-solid fa-minus"></i></button>
             </div>
         </ul>
     );
