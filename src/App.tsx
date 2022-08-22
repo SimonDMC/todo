@@ -124,7 +124,10 @@ function App() {
   useEffect(() => {
     onAuthStateChanged(auth, (signedInUser) => {
       if (signedInUser) {
-        compareLocalAndUserData(signedInUser, false);
+        const loggedIn = localStorage.getItem('TODO-signed-in') === 'true';
+        compareLocalAndUserData(signedInUser, !loggedIn);
+        console.log(!loggedIn);
+        localStorage.setItem('TODO-signed-in', 'true');
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,15 +135,12 @@ function App() {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    if (!result || !result.user) {
-      return;
-    }
-    compareLocalAndUserData(result.user, true);
+    await signInWithPopup(auth, provider);
   }
 
   const logOut = () => {
     auth.signOut();
+    localStorage.setItem('TODO-signed-in', 'false');
   }
 
   const compareLocalAndUserData = async (firebaseUser: FirebaseUser, newLogin: boolean) => {
@@ -160,8 +160,8 @@ function App() {
         delete board.animation;
         board.todoItems.forEach((element: TodoItemType) => {
           delete element.animation;
-        }
-      )});
+        })
+      });
     }
 
     // 1
