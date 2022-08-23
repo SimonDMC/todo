@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 interface TodoBoardListProps {
     todoBoards: TodoBoardObject[];
     setTodos: Function;
+    completedItems: string[];
     handleNameChange: Function;
     addBoard: Function;
     removeBoard: Function;
@@ -88,6 +89,7 @@ export default function TodoBoardList(props: TodoBoardListProps) {
                         index={index}
                         total={total}
                         setTodos={props.setTodos}
+                        completedItems={props.completedItems}
                         handleNameChange={props.handleNameChange}
                         addBoard={props.addBoard}
                         removeBoard={props.removeBoard}

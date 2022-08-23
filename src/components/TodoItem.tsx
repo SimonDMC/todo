@@ -7,6 +7,7 @@ interface TodoItemProps {
     todo: TodoItemType;
     todos: TodoItemType[];
     setTodos: Function;
+    completedItems: string[];
 }
 
 const TodoItem = (props: TodoItemProps) => {
@@ -147,6 +148,8 @@ const TodoItem = (props: TodoItemProps) => {
 
         // mark as complete
         props.todo.completed = true;
+        props.completedItems.push(props.todo.text);
+        localStorage.setItem('TODO-completed-items', JSON.stringify(props.completedItems));
 
         // play sound
         audio.play();

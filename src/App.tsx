@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Title from './components/Title';
 import TodoBoardList from './components/TodoBoardList';
@@ -8,6 +8,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { app, getUserData, saveUserData } from "./firebase";
 import { isEqual } from 'lodash';
 import { getDataOverridePromise, overridePopup, randomString } from './util';
+import { Popup } from './popup';
+import CompletedButton from './components/CompletedButton';
 
 export type TodoItemType = {
   id: string;
@@ -44,6 +46,7 @@ function App() {
   });
 
   const [todos, setTodos] = useState(importedTodos);
+  const completedItems = useRef(localStorage.getItem('TODO-completed-items') ? JSON.parse(localStorage.getItem('TODO-completed-items') as string) as string[] : []);
 
   const setTodosWrapper = (passedTodos: TodoItemType[], boardID: string) => {
     // clone boards by value
@@ -200,6 +203,41 @@ function App() {
     }
   }
   
+  let oldCompletedPopup = document.querySelector('.popup.completed');
+  if (oldCompletedPopup) oldCompletedPopup.remove();
+  let completedPopupContent = '<ul>';
+  for (const element of completedItems.current) {
+    completedPopupContent += `<li><span>${element}</span><button><i class="fa-solid fa-xmark"></i></button></li>`;
+  }
+  completedPopupContent += `</ul>`;
+  if (completedPopupContent === '<ul></ul>') completedPopupContent = '<h2>Nothing here yet!</h2>';
+  
+  let completedPopup = new Popup({
+    id: 'completed',
+    title: 'Completed Items',
+    backgroundColor: '#FFFEE3',
+    titleColor: '#000000A0',
+    closeColor: '#000000A0',
+    content: completedPopupContent,
+  });
+
+  // add a click event listener to all buttons in the completed popup
+  for (const button of document.querySelectorAll('.popup.completed button')) {
+    button.addEventListener('click', async (event) => {
+      const deleteButton = event.target as HTMLButtonElement;
+      const li = deleteButton.parentElement?.parentElement as HTMLLIElement;
+      const span = li.firstElementChild as HTMLSpanElement;
+      const text = span.innerText;
+      const parent = li.parentElement;
+      completedItems.current = completedItems.current.filter((element) => element !== text);
+      localStorage.setItem('completed-items', JSON.stringify(completedItems.current));
+      li.style.opacity = '0';
+      // wait .3s
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      li.remove();
+      if (parent?.childElementCount === 0) document.querySelector('.popup.completed .popup-body')!.innerHTML = '<h2>Nothing here yet!</h2>';
+    });
+  }
 
   return (
     <div className="App">
@@ -211,12 +249,16 @@ function App() {
       <TodoBoardList 
         todoBoards={todos}
         setTodos={setTodosWrapper}
+        completedItems={completedItems.current}
         handleNameChange={handleNameChange}
         addBoard={addBoard}
         removeBoard={removeBoard}
         moveBoard={moveBoard}
       />
       <Title title="To Do:" />
+      <CompletedButton
+        onClick={() => completedPopup.show()}
+      />
     </div>
   );
 }

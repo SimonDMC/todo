@@ -6,6 +6,7 @@ interface TodoBoardProps {
     index: number;
     total: number;
     setTodos: Function;
+    completedItems: string[];
     handleNameChange: Function;
     addBoard: Function;
     removeBoard: Function;
@@ -167,6 +168,7 @@ const TodoBoard = (props: TodoBoardProps) => {
                         todo={todo}
                         todos={props.todos.todoItems}
                         setTodos={setTodos}
+                        completedItems={props.completedItems}
                         />
                     );
                 })}

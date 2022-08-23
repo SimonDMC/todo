@@ -34,8 +34,51 @@ input {
   opacity: 1;
 }
 
-.login:hover {
+.login:hover, .completed-button:hover {
   background-color: #00000020 !important;
+}
+
+.popup.completed h2 {
+  font-size: 1.5em;
+  margin-top: 1em;
+  color: #00000050;
+  font-weight: 500;
+}
+
+.popup.completed .popup-body {
+  overflow-y: scroll;
+}
+
+.popup.completed ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup.completed li {
+  width: 96%;
+  padding: 2% 3%;
+  border: 0.09em solid #81818180;
+  border-radius: 0.8em;
+  color: #818181B0;
+  font-size: 1.3em;
+  text-align: left;
+  font-weight: 500;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+  margin-bottom: .4em;
+  word-break: break-word;
+  display: flex;
+  justify-content: space-between;
+}
+
+.popup.completed button {
+  border: none;
+  padding: 0;
+  background: none;
+  color: inherit;
 }
 
 @keyframes background-gradient {

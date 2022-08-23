@@ -5,10 +5,10 @@ export function placeCaretAtEnd(el: HTMLInputElement) {
     el.focus();
     if (typeof window.getSelection != "undefined"
             && typeof document.createRange != "undefined") {
-        var range = document.createRange();
+        let range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
-        var sel = window.getSelection()!;
+        let sel = window.getSelection()!;
         sel.removeAllRanges();
         sel.addRange(range);
     }
@@ -49,4 +49,4 @@ export const overridePopup = new Popup({
     dynamicHeight: true,
     backgroundColor: '#FFFEE3',
     allowClose: false,
-  });
+});
