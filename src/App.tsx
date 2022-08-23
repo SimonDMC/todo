@@ -7,7 +7,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, User as FirebaseUser, onA
 import { useAuthState } from "react-firebase-hooks/auth";
 import { app, getUserData, saveUserData } from "./firebase";
 import { isEqual } from 'lodash';
-import { getDataOverridePromise, overridePopup, randomString } from './util';
+import { getDataOverridePromise, randomString } from './util';
 import { Popup } from './popup';
 import CompletedButton from './components/CompletedButton';
 
@@ -24,6 +24,11 @@ export type TodoBoardObject = {
   id: string;
   todoItems: TodoItemType[];
   animation?: boolean;
+}
+
+export type UserObject = {
+  boards: TodoBoardObject[];
+  completed: string[];
 }
 
 function App() {
@@ -46,7 +51,7 @@ function App() {
   });
 
   const [todos, setTodos] = useState(importedTodos);
-  const completedItems = useRef(localStorage.getItem('TODO-completed-items') ? JSON.parse(localStorage.getItem('TODO-completed-items') as string) as string[] : []);
+  const completedItems = useRef(localStorage.getItem('TODO-completed-items') !== 'undefined' ? JSON.parse(localStorage.getItem('TODO-completed-items') as string) as string[] : []);
 
   const setTodosWrapper = (passedTodos: TodoItemType[], boardID: string) => {
     // clone boards by value
@@ -63,7 +68,7 @@ function App() {
     todoBoards[index] = modifiedBoard;
     setTodos(todoBoards);
     localStorage.setItem('todo-list', JSON.stringify(todoBoards));
-    if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index});
+    if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index}, completedItems.current);
   }
 
   const handleNameChange = (e: Event, boardID: string) => {
@@ -79,7 +84,7 @@ function App() {
     todoBoards[index] = modifiedBoard;
     setTodos(todoBoards);
     localStorage.setItem('todo-list', JSON.stringify(todoBoards));
-    if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index});
+    if (user) saveUserData(user.uid, {'board': modifiedBoard, 'boardIndex': index}, completedItems.current);
   }
 
   const addBoard = (index: number) => {
@@ -98,7 +103,7 @@ function App() {
     });
     setTodos(todoBoards);
     localStorage.setItem('todo-list', JSON.stringify(todoBoards));
-    if (user) saveUserData(user.uid, {'allBoards': todoBoards});
+    if (user) saveUserData(user.uid, {'allBoards': todoBoards}, completedItems.current);
   }
 
   const removeBoard = (index: number) => {
@@ -107,7 +112,7 @@ function App() {
     todoBoards.splice(index, 1);
     setTodos(todoBoards);
     localStorage.setItem('todo-list', JSON.stringify(todoBoards));
-    if (user) saveUserData(user.uid, {'allBoards': todoBoards});
+    if (user) saveUserData(user.uid, {'allBoards': todoBoards}, completedItems.current);
   }
 
   const moveBoard = (from: number, to: number) => {
@@ -116,7 +121,7 @@ function App() {
     [todoBoards[from], todoBoards[to]] = [todoBoards[to], todoBoards[from]];
     setTodos(todoBoards);
     localStorage.setItem('todo-list', JSON.stringify(todoBoards));
-    if (user) saveUserData(user.uid, {'allBoards': todoBoards});
+    if (user) saveUserData(user.uid, {'allBoards': todoBoards}, completedItems.current);
   }
 
   const auth = getAuth(app);
@@ -128,8 +133,7 @@ function App() {
     onAuthStateChanged(auth, (signedInUser) => {
       if (signedInUser) {
         const loggedIn = localStorage.getItem('TODO-signed-in') === 'true';
-        compareLocalAndUserData(signedInUser, !loggedIn);
-        console.log(!loggedIn);
+        compareLocalAndUserData(signedInUser, !loggedIn, todos);
         localStorage.setItem('TODO-signed-in', 'true');
       }
     });
@@ -146,7 +150,21 @@ function App() {
     localStorage.setItem('TODO-signed-in', 'false');
   }
 
-  const compareLocalAndUserData = async (firebaseUser: FirebaseUser, newLogin: boolean) => {
+  let oldOverridePopup = document.querySelector('.popup.override');
+  if (oldOverridePopup) oldOverridePopup.remove();
+  const overridePopup = new Popup({
+    id: 'override',
+    title: 'Data Conflict',
+    content: `Your cloud data and local data are different. Which one do you want to use?
+      big-margin§{btn-refuse-override}[Local Data]     {btn-accept-override}[Cloud Data]`,
+    sideMargin: '1.5em',
+    fontSizeMultiplier: '1.2',
+    dynamicHeight: true,
+    backgroundColor: '#FFFEE3',
+    allowClose: false,
+  });
+
+  const compareLocalAndUserData = async (firebaseUser: FirebaseUser, newLogin: boolean, todoBoards: TodoBoardObject[]) => {
     /*
       Order of operations:
         1 - If local data matches user data, leave it as is.
@@ -156,10 +174,10 @@ function App() {
           4.1 - If the user has just logged in, open prompt to overwrite local data.
           4.2 - If the user is already logged in, set local data to user data.
     */
-    let userData = await getUserData(firebaseUser.uid) as TodoBoardObject[];
+    let userData = await getUserData(firebaseUser.uid) as UserObject;
     // remove animation attributes for comparison
     if (userData && Object.keys(userData).length !== 0) { // non-empty user data check
-      userData.forEach((board: TodoBoardObject) => {
+      userData.boards.forEach((board: TodoBoardObject) => {
         delete board.animation;
         board.todoItems.forEach((element: TodoItemType) => {
           delete element.animation;
@@ -168,17 +186,19 @@ function App() {
     }
 
     // 1
-    if (isEqual(userData, todos)) {
+    if (isEqual(userData.boards, todoBoards)) {
       console.log('Local data matches user data.');
     // 2
     } else if (!userData || Object.keys(userData).length === 0) { // empty
       console.log('User data is empty.');
-      saveUserData(firebaseUser.uid, {'allBoards': todos});
+      saveUserData(firebaseUser.uid, {'allBoards': todoBoards}, completedItems.current);
     // 3
-    } else if (todos.length === 1 && todos[0].todoItems.length === 1) { // empty apart from placeholder item
+    } else if (todoBoards.length === 1 && todoBoards[0].todoItems.length === 1) { // empty apart from placeholder item
       console.log('Local data is empty.');
-      setTodos(userData);
-      localStorage.setItem('todo-list', JSON.stringify(userData));
+      setTodos(userData.boards);
+      completedItems.current = userData.completed;
+      localStorage.setItem('todo-list', JSON.stringify(userData.boards));
+      localStorage.setItem('TODO-completed-items', JSON.stringify(userData.completed));
     // 4
     } else {
       console.log('User data and local data are different.');
@@ -187,18 +207,23 @@ function App() {
         overridePopup.show();
         await getDataOverridePromise().then(() => {
           // accepted local override
-          setTodos(userData);
-          localStorage.setItem('todo-list', JSON.stringify(userData));
+          console.log(userData.boards);
+          setTodos(userData.boards);
+          completedItems.current = userData.completed;
+          localStorage.setItem('todo-list', JSON.stringify(userData.boards));
+          localStorage.setItem('TODO-completed-items', JSON.stringify(userData.completed));
           overridePopup.hide();
         }).catch(() => {
           // rejected local override (local overrides cloud)
-          saveUserData(firebaseUser.uid, {'allBoards': todos});
+          saveUserData(firebaseUser.uid, {'allBoards': todoBoards}, completedItems.current);
           overridePopup.hide();
         });
       // 4.2
       } else {
-        setTodos(userData);
-        localStorage.setItem('todo-list', JSON.stringify(userData));
+        setTodos(userData.boards);
+        completedItems.current = userData.completed;
+        localStorage.setItem('todo-list', JSON.stringify(userData.boards));
+        localStorage.setItem('TODO-completed-items', JSON.stringify(userData.completed));
       }
     }
   }
@@ -206,8 +231,10 @@ function App() {
   let oldCompletedPopup = document.querySelector('.popup.completed');
   if (oldCompletedPopup) oldCompletedPopup.remove();
   let completedPopupContent = '<ul>';
-  for (const element of completedItems.current) {
-    completedPopupContent += `<li><span>${element}</span><button><i class="fa-solid fa-xmark"></i></button></li>`;
+  if (completedItems.current && completedItems.current.length > 0) {
+    for (const element of completedItems.current) {
+      completedPopupContent += `<li><span>${element}</span><button><i class="fa-solid fa-xmark"></i></button></li>`;
+    }
   }
   completedPopupContent += `</ul>`;
   if (completedPopupContent === '<ul></ul>') completedPopupContent = '<h2>Nothing here yet!</h2>';
@@ -230,7 +257,7 @@ function App() {
       const text = span.innerText;
       const parent = li.parentElement;
       completedItems.current = completedItems.current.filter((element) => element !== text);
-      localStorage.setItem('completed-items', JSON.stringify(completedItems.current));
+      localStorage.setItem('TODO-completed-items', JSON.stringify(completedItems.current));
       li.style.opacity = '0';
       // wait .3s
       await new Promise((resolve) => setTimeout(resolve, 300));

@@ -1,5 +1,3 @@
-import { Popup } from './popup';
-
 // https://stackoverflow.com/a/4238971/19271522
 export function placeCaretAtEnd(el: HTMLInputElement) {
     el.focus();
@@ -38,15 +36,3 @@ export function randomString(n: number) {
     }
     return result;
 }
-
-export const overridePopup = new Popup({
-    id: 'override',
-    title: 'Data Conflict',
-    content: `Your cloud data and local data are different. Which one do you want to use?
-      big-margin§{btn-refuse-override}[Local Data]     {btn-accept-override}[Cloud Data]`,
-    sideMargin: '1.5em',
-    fontSizeMultiplier: '1.2',
-    dynamicHeight: true,
-    backgroundColor: '#FFFEE3',
-    allowClose: false,
-});

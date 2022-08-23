@@ -27,18 +27,21 @@ interface UserData {
 }
 
 // save user data
-export function saveUserData(userId: string, params: UserData) {
+export function saveUserData(userId: string, params: UserData, completed: string[]) {
+    set(ref(db, `users/${userId}/completed`), completed);
     if ('board' in params && 'boardIndex' in params)
-        set(ref(db, `users/${userId}/${params.boardIndex}`), params.board);
+        set(ref(db, `users/${userId}/boards/${params.boardIndex}`), params.board);
     else if ('allBoards' in params) {
-        set(ref(db, `users/${userId}`), params.allBoards);
+        set(ref(db, `users/${userId}/boards`), params.allBoards);
     } else {
-        console.log('saveUserData: invalid params');
+        console.error('saveUserData: invalid params');
     }
 }
 
 // get user data
 export async function getUserData(userId: string) {
     const snapshot = await get(ref(db, `users/${userId}`));
-    return snapshot.val();   
+    const data = snapshot.val();
+    if (data.completed === undefined) data.completed = [];
+    return data;  
 }
