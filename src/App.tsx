@@ -209,7 +209,7 @@ function App() {
           id: 'override',
           title: 'Data Conflict',
           content: `Your cloud data and local data are different. Which one do you want to use?
-            big-margin§{btn-refuse-override}[Local Data]     {btn-accept-override}[Cloud Data]`,
+            custom-space-out big-margin§{btn-refuse-override}[Local Data]{btn-accept-override}[Cloud Data]`,
           sideMargin: '1.5em',
           fontSizeMultiplier: '1.2',
           dynamicHeight: true,

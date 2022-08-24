@@ -38,6 +38,24 @@ input {
   background-color: #00000020 !important;
 }
 
+.popup.override .custom-space-out {
+  display: flex;
+  justify-content: center;
+  gap: 1.5em;
+}
+
+.popup.completed .popup-title {
+  font-size: min(3.4em, 8vw);
+}
+
+.popup.completed .popup-body li {
+  font-size: min(1.3em, 4.5vw);
+}
+
+.popup.completed li:last-child {
+  margin-top: 1vh;
+}
+
 .popup.completed h2 {
   font-size: 1.5em;
   margin-top: 1em;
