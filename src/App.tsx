@@ -51,7 +51,11 @@ function App() {
   });
 
   const [todos, setTodos] = useState(importedTodos);
-  const completedItems = useRef(localStorage.getItem('TODO-completed-items') !== 'undefined' ? JSON.parse(localStorage.getItem('TODO-completed-items') as string) as string[] : []);
+  const completedItems = useRef(
+    localStorage.getItem('TODO-completed-items') !== 'undefined' &&
+    localStorage.getItem('TODO-completed-items') != null ?
+  JSON.parse(localStorage.getItem('TODO-completed-items') as string) as string[] : []);
+  if (completedItems.current == null) completedItems.current = [];
 
   const setTodosWrapper = (passedTodos: TodoItemType[], boardID: string) => {
     // clone boards by value
@@ -133,7 +137,7 @@ function App() {
     onAuthStateChanged(auth, (signedInUser) => {
       if (signedInUser) {
         const loggedIn = localStorage.getItem('TODO-signed-in') === 'true';
-        compareLocalAndUserData(signedInUser, !loggedIn, todos);
+        compareLocalAndUserData(signedInUser, !loggedIn);
         localStorage.setItem('TODO-signed-in', 'true');
       }
     });
@@ -150,21 +154,7 @@ function App() {
     localStorage.setItem('TODO-signed-in', 'false');
   }
 
-  let oldOverridePopup = document.querySelector('.popup.override');
-  if (oldOverridePopup) oldOverridePopup.remove();
-  const overridePopup = new Popup({
-    id: 'override',
-    title: 'Data Conflict',
-    content: `Your cloud data and local data are different. Which one do you want to use?
-      big-margin§{btn-refuse-override}[Local Data]     {btn-accept-override}[Cloud Data]`,
-    sideMargin: '1.5em',
-    fontSizeMultiplier: '1.2',
-    dynamicHeight: true,
-    backgroundColor: '#FFFEE3',
-    allowClose: false,
-  });
-
-  const compareLocalAndUserData = async (firebaseUser: FirebaseUser, newLogin: boolean, todoBoards: TodoBoardObject[]) => {
+  const compareLocalAndUserData = async (firebaseUser: FirebaseUser, newLogin: boolean) => {
     /*
       Order of operations:
         1 - If local data matches user data, leave it as is.
@@ -175,6 +165,15 @@ function App() {
           4.2 - If the user is already logged in, set local data to user data.
     */
     let userData = await getUserData(firebaseUser.uid) as UserObject;
+    let todoBoards = localStorage.getItem('todo-list') ? JSON.parse(localStorage.getItem('todo-list') as string) as TodoBoardObject[] :
+    [{
+      "name": "",
+      "id": randomString(6),
+      "todoItems": [{
+        text: '',
+        id: randomString(6),
+      }]
+    }] as TodoBoardObject[];
     // remove animation attributes for comparison
     if (userData && Object.keys(userData).length !== 0) { // non-empty user data check
       userData.boards.forEach((board: TodoBoardObject) => {
@@ -204,10 +203,22 @@ function App() {
       console.log('User data and local data are different.');
       // 4.1
       if (newLogin) {
+        let oldOverridePopup = document.querySelector('.popup.override');
+        if (oldOverridePopup) oldOverridePopup.remove();
+        const overridePopup = new Popup({
+          id: 'override',
+          title: 'Data Conflict',
+          content: `Your cloud data and local data are different. Which one do you want to use?
+            big-margin§{btn-refuse-override}[Local Data]     {btn-accept-override}[Cloud Data]`,
+          sideMargin: '1.5em',
+          fontSizeMultiplier: '1.2',
+          dynamicHeight: true,
+          backgroundColor: '#FFFEE3',
+          allowClose: false,
+        });
         overridePopup.show();
         await getDataOverridePromise().then(() => {
           // accepted local override
-          console.log(userData.boards);
           setTodos(userData.boards);
           completedItems.current = userData.completed;
           localStorage.setItem('todo-list', JSON.stringify(userData.boards));

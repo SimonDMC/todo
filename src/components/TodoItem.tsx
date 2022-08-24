@@ -143,8 +143,8 @@ const TodoItem = (props: TodoItemProps) => {
     }
 
     const handleCheckboxClick = async () => {
-        // check for not empty todo
-        if (props.todo.text === '') return;
+        // check for not empty todo & not completed yet
+        if (props.todo.text === '' || props.todo.completed === true) return;
 
         // mark as complete
         props.todo.completed = true;
