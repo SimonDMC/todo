@@ -17,8 +17,8 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
+  "start_url": "https://simondmc.com/todo",
+  "display": "fullscreen",
   "theme_color": "#fed3f1",
   "background_color": "#fed3f1"
 }
