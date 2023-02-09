@@ -38,13 +38,6 @@ export type UserObject = {
 };
 
 function App() {
-    // activate service worker
-    if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-            navigator.serviceWorker.register("./service-worker.ts");
-        });
-    }
-
     const importedTodos = localStorage.getItem("todo-list")
         ? (JSON.parse(
               localStorage.getItem("todo-list") as string
