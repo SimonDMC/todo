@@ -1,7 +1,7 @@
-import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
-import { placeCaretAtEnd, getInnerHeight, randomString } from '../util';
-import { TodoItemType } from '../App';
-import { useEffect } from 'react';
+import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+import { placeCaretAtEnd, getInnerHeight, randomString } from "../util";
+import { TodoItemType } from "../App";
+import { useEffect } from "react";
 
 interface TodoItemProps {
     todo: TodoItemType;
@@ -11,7 +11,6 @@ interface TodoItemProps {
 }
 
 const TodoItem = (props: TodoItemProps) => {
-
     const index = props.todos.indexOf(props.todo);
     const ding = require("../ding.mp3");
 
@@ -22,57 +21,61 @@ const TodoItem = (props: TodoItemProps) => {
     });
 
     useEffect(() => {
-        props.setTodos(props.todos.filter((todo) => {
-            return todo.completed !== true;
-        }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        props.setTodos(
+            props.todos.filter((todo) => {
+                return todo.completed !== true;
+            })
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.todo.completed]);
 
     const style: React.CSSProperties = {
-        color: '#818181B0',
-        fontWeight: '500',
-        fontSize: '2em',
-        border: '0.07em solid #81818180',
-        borderRadius: '0.8em',
-        top: 2.6 + index * 2.5 + prevExtraLines * 1.22 + 'em',
-        marginLeft: '3%',
-        marginRight: '3%',
-        padding: '2% 3%',
-        display: 'flex',
-        position: 'absolute',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        transition: 'opacity 0.3s, top 0.5s',
-        width: '94%',
-        cursor: 'text',
-        wordBreak: 'break-word',
-        animation: props.todo.animation ? 'fade-in .3s' : 'none',
-    }
+        color: "#818181B0",
+        fontWeight: "500",
+        fontSize: "2em",
+        border: "0.07em solid #81818180",
+        borderRadius: "0.8em",
+        top: 2.6 + index * 2.5 + prevExtraLines * 1.22 + "em",
+        marginLeft: "3%",
+        marginRight: "3%",
+        padding: "2% 3%",
+        display: "flex",
+        position: "absolute",
+        alignItems: "center",
+        justifyContent: "space-between",
+        transition: "opacity 0.3s, top 0.5s",
+        width: "94%",
+        cursor: "text",
+        wordBreak: "break-word",
+        animation: props.todo.animation ? "fade-in .3s" : "none",
+    };
 
     const circlestyle: React.CSSProperties = {
-        border: '0.07em solid #81818180',
-        borderRadius: '100%',
-        width: '1.2em',
-        height: '1.2em',
+        border: "0.07em solid #81818180",
+        borderRadius: "100%",
+        width: "1.2em",
+        height: "1.2em",
         flexShrink: 0,
-        cursor: 'pointer',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textSizeAdjust: 'none',
-        color: '#81818100',
-        transition: 'color 0.3s',
-    }
+        cursor: "pointer",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        textSizeAdjust: "none",
+        color: "#81818100",
+        transition: "color 0.3s",
+    };
 
     const handleChange = async (evt: ContentEditableEvent) => {
         let oldValue = props.todo.text;
         let newValue = (evt.target as HTMLTextAreaElement).value;
         let toSave;
         // if deleting a todo, remove it
-        if (oldValue !== '' && newValue === '') {
-            let baseElement = (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement);
+        if (oldValue !== "" && newValue === "") {
+            let baseElement = document.querySelector(
+                ".todo-item.item-" + props.todo.id
+            ) as HTMLElement;
             // let fade out
-            baseElement.style.opacity = '0';
+            baseElement.style.opacity = "0";
 
             // mark as complete (for deletion)
             props.todo.completed = true;
@@ -82,37 +85,41 @@ const TodoItem = (props: TodoItemProps) => {
             if (!el) el = baseElement.nextElementSibling?.firstChild;
             placeCaretAtEnd(el as HTMLInputElement);
 
-            await new Promise(r => setTimeout(r, 300))
+            await new Promise((r) => setTimeout(r, 300));
 
-            toSave = props.todos.filter(todo => todo.id !== props.todo.id);
-        }
-        else {
+            toSave = props.todos.filter((todo) => todo.id !== props.todo.id);
+        } else {
             // if filling in an empty todo, create a new empty one
-            if (oldValue === '' && newValue !== '') {
+            if (oldValue === "" && newValue !== "") {
                 props.todos.push({
                     id: randomString(6),
-                    text: '',
+                    text: "",
                     extraLines: 0,
                     animation: true,
                 });
             }
 
             // calculate amount of extra lines
-            let thisBox = document.querySelector(".todo-item.item-" + props.todo.id + " .todo-text") as HTMLElement;
-            let emptyBox = document.querySelector(".todo-list li:last-child .todo-text") as HTMLElement;
-            let extraLines = getInnerHeight(thisBox) / getInnerHeight(emptyBox) - 1;
+            let thisBox = document.querySelector(
+                ".todo-item.item-" + props.todo.id + " .todo-text"
+            ) as HTMLElement;
+            let emptyBox = document.querySelector(
+                ".todo-list li:last-child .todo-text"
+            ) as HTMLElement;
+            let extraLines =
+                getInnerHeight(thisBox) / getInnerHeight(emptyBox) - 1;
 
             // if editing a todo, update it
-            toSave = props.todos.map(todo => {
+            toSave = props.todos.map((todo) => {
                 if (todo.id === props.todo.id) {
                     return {
                         ...todo,
                         text: newValue,
-                        extraLines: extraLines
-                    }
+                        extraLines: extraLines,
+                    };
                 }
-                return todo
-            })
+                return todo;
+            });
         }
 
         // save everything
@@ -120,19 +127,20 @@ const TodoItem = (props: TodoItemProps) => {
     };
 
     const handleKeyDown = (evt: React.KeyboardEvent) => {
-        let baseElement = (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement);
-        
-        if (evt.key === 'Enter' || evt.key === 'ArrowDown') {
+        let baseElement = document.querySelector(
+            ".todo-item.item-" + props.todo.id
+        ) as HTMLElement;
+
+        if (evt.key === "Enter" || evt.key === "ArrowDown") {
             // cancel event
             evt.preventDefault();
             evt.stopPropagation();
-            
+
             // if next element exists, select it
             let el = baseElement.nextElementSibling?.firstChild;
             if (el) placeCaretAtEnd(el as HTMLInputElement);
-            
         }
-        if (evt.key === 'ArrowUp') {
+        if (evt.key === "ArrowUp") {
             evt.preventDefault();
             evt.stopPropagation();
 
@@ -140,41 +148,56 @@ const TodoItem = (props: TodoItemProps) => {
             let el = baseElement.previousElementSibling?.firstChild;
             if (el) placeCaretAtEnd(el as HTMLInputElement);
         }
-    }
+    };
 
     const handleCheckboxClick = async () => {
         // check for not empty todo & not completed yet
-        if (props.todo.text === '' || props.todo.completed === true) return;
+        if (props.todo.text === "" || props.todo.completed === true) return;
 
         // mark as complete
         props.todo.completed = true;
         props.completedItems.push(props.todo.text);
-        localStorage.setItem('TODO-completed-items', JSON.stringify(props.completedItems));
+        localStorage.setItem(
+            "TODO-completed-items",
+            JSON.stringify(props.completedItems)
+        );
 
         // play sound
         audio.play();
 
         // fade in checkmark
-        (document.querySelector(".todo-item.item-" + props.todo.id + " .todo-circle") as HTMLElement).style.color = '#81818180';
+        const todoCircleEl = document.querySelector(
+            ".todo-item.item-" + props.todo.id + " .todo-circle"
+        ) as HTMLElement;
+        if (todoCircleEl) todoCircleEl.style.color = "#818181";
 
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 300));
 
         // fade out box
-        (document.querySelector(".todo-item.item-" + props.todo.id) as HTMLElement).style.opacity = '0';
+        const todoItemBox = document.querySelector(
+            ".todo-item.item-" + props.todo.id
+        ) as HTMLElement;
+        if (todoItemBox) todoItemBox.style.opacity = "0";
 
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 300));
 
         // remove todo object from todos array
-        props.setTodos(props.todos.filter((todo) => {
-            return todo.id !== props.todo.id;
-        }));
-    }
+        props.setTodos(
+            props.todos.filter((todo) => {
+                return todo.id !== props.todo.id;
+            })
+        );
+    };
 
     const handleTextBoxClick = (evt: React.MouseEvent) => {
-        if ((evt.target as HTMLElement).tagName === 'LI') {
-            placeCaretAtEnd(document.querySelector(".todo-item.item-" + props.todo.id + " .todo-text") as HTMLInputElement);
+        if ((evt.target as HTMLElement).tagName === "LI") {
+            placeCaretAtEnd(
+                document.querySelector(
+                    ".todo-item.item-" + props.todo.id + " .todo-text"
+                ) as HTMLInputElement
+            );
         }
-    }
+    };
 
     const audio = new Audio(ding);
 
@@ -182,27 +205,29 @@ const TodoItem = (props: TodoItemProps) => {
     if (props.todo.completed) return null;
 
     return (
-            <li
+        <li
             className={"todo-item item-" + props.todo.id}
             style={style}
-            onClick={(e) => handleTextBoxClick(e)}>
-                <ContentEditable
-                    className="todo-text"
-                    html={props.todo.text}
-                    onChange={(e) => handleChange(e)}
-                    onKeyDown={(e) => handleKeyDown(e)}
-                    data-gramm="false"
-                    data-gramm_editor="false"
-                    data-enable-grammarly="false"
-                />
-                <div 
+            onClick={(e) => handleTextBoxClick(e)}
+        >
+            <ContentEditable
+                className="todo-text"
+                html={props.todo.text}
+                onChange={(e) => handleChange(e)}
+                onKeyDown={(e) => handleKeyDown(e)}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+            />
+            <div
                 className="todo-circle"
                 style={circlestyle}
-                onClick={() => handleCheckboxClick()}>
+                onClick={() => handleCheckboxClick()}
+            >
                 <i className="fa-solid fa-check"></i>
-                </div>
-            </li>
+            </div>
+        </li>
     );
-}
+};
 
 export default TodoItem;

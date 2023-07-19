@@ -347,6 +347,7 @@ function App() {
         titleColor: "#000000A0",
         closeColor: "#000000A0",
         content: completedPopupContent,
+        fixedHeight: true,
     });
 
     // add a click event listener to all buttons in the completed popup
